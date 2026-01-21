@@ -1,7 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'placebear.com',
+        port: '',
+        pathname: '/g/200/200',
+        search: '',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
