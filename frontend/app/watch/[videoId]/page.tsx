@@ -85,7 +85,7 @@ export default function WatchPage() {
       //   window.webgazer.showVideoPreview(true);
       // }
       
-      dispatch({ type: "START_CALIBRATION" })
+      dispatch({ type: "START_PLAYING" })
     } catch (err) {
       console.warn("Fullscreen denied:", err)
       dispatch({ type: "SET_ERROR", payload: "Fullscreen is required to proceed. Please allow fullscreen access" })

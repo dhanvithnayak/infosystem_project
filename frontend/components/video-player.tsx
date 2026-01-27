@@ -96,16 +96,15 @@ export default function VideoPlayer({ video, onEnded }: VideoPlayerProps) {
 
   if (video.source_type === "REMOTE") {
     // Note: 'enablejsapi=1' is REQUIRED for onEnded detection
-    const embedSrc = `${video.meta.embed_url}?autoplay=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+    const embedSrc = `${video.meta.embed_url}?rel=0&autoplay=1&fs=0&modestbranding=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
     
     return (
-      <div className="aspect-video w-full overflow-hidden rounded-lg bg-black shadow-lg mt-4 mx-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black w-screen h-screen">
         <iframe
           src={embedSrc}
           title={video.title}
           className="h-full w-full"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-          allowFullScreen
         />
       </div>
     );
@@ -113,7 +112,7 @@ export default function VideoPlayer({ video, onEnded }: VideoPlayerProps) {
 
   if (video.source_type === "LOCAL") {
     return (
-      <div className="aspect-video w-full overflow-hidden rounded-lg bg-black shadow-lg">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black w-screen h-screen">
         <video
           controls
           autoPlay
