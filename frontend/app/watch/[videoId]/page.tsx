@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { useState, useEffect, useRef, useReducer } from "react"
 import { Video } from "@/types"
 import VideoPlayer from "@/components/video-player"
+import CalibrationOverlay from "@/components/calibration-overlay"
 
 type WatchState = {
   status: "LOADING" | "IDLE" | "CALIBRATING" | "PLAYING" | "SUMMARY" | "ERROR"
@@ -148,9 +149,9 @@ export default function WatchPage() {
       )}
 
 
-      {/* {viewState === "CALIBRATING" && (
+      {state.status === "CALIBRATING" && (
         <CalibrationOverlay onComplete={finishCalibration} />
-      )} */}
+      )}
 
       {state.status === "PLAYING" && (
         <div className="container mx-auto">
