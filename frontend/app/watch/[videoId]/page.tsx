@@ -86,7 +86,7 @@ export default function WatchPage() {
       //   window.webgazer.showVideoPreview(true);
       // }
       
-      dispatch({ type: "START_PLAYING" })
+      dispatch({ type: "START_CALIBRATION" })
     } catch (err) {
       console.warn("Fullscreen denied:", err)
       dispatch({ type: "SET_ERROR", payload: "Fullscreen is required to proceed. Please allow fullscreen access" })
@@ -150,7 +150,7 @@ export default function WatchPage() {
 
 
       {state.status === "CALIBRATING" && (
-        <CalibrationOverlay onComplete={finishCalibration} />
+        <CalibrationOverlay onComplete={finishCalibration} onCancel={() => {}}/>
       )}
 
       {state.status === "PLAYING" && (
