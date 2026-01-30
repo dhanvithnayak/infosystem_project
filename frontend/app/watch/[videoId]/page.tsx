@@ -215,17 +215,20 @@ export default function WatchPage() {
               <div className="font-extrabold">Fullscreen Paused</div>
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {state.status === "CALIBRATING" 
-                ? "Calibration requires fullscreen. Resume to continue, or stop to cancel."
-                : "Playback requires fullscreen. Resume to watch, or finish the session."}
+              <div className="font-medium">
+                {state.status === "CALIBRATING" 
+                  ? "Calibration requires fullscreen. Resume to continue, or stop to cancel."
+                  : "Playback requires fullscreen. Resume to watch, or finish the session."
+                }
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleStopSession}>
+            <AlertDialogCancel onClick={handleStopSession} className="cursor-pointer">
               {state.status === "CALIBRATING" ? "Stop Calibration" : "Finish Session"}
             </AlertDialogCancel>
             
-            <AlertDialogAction onClick={handleResumeFullscreen}>
+            <AlertDialogAction onClick={handleResumeFullscreen} className="cursor-pointer">
               Resume Fullscreen
             </AlertDialogAction>
           </AlertDialogFooter>
