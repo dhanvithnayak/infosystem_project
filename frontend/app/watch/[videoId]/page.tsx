@@ -74,6 +74,31 @@ export default function WatchPage() {
     fetchVideo();
   }, [])
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        if (state.status == "CALIBRATING") {
+          const confirmed = window.confirm(
+            "Fullscreen mode is required for calibration. Exiting fullscreen will cancel the calibration process. Do you want to proceed?"
+          )
+          if (confirmed) {
+            dispatch({ type: "SET_ERROR", payload: "Fullscreen mode is required for calibration. Please try again" })
+          }
+        } else if (state.status == "PLAYING") {
+          const confirmed = window.confirm(
+            "Finish the session now? Confirming will mark the session as finished"
+          )
+          if (confirmed) {
+            dispatch({ type: "END_SESSION" })
+          }
+        }
+      }
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
+  }, [state.status])
+
   const enterFullscreenAndStart = async () => {
     if (!containerRef.current) return
 
