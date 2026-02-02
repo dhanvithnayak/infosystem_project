@@ -13,6 +13,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 import { useState, useEffect, useRef, useReducer } from "react"
+import Script from "next/script"
 import { Video } from "@/types"
 import VideoPlayer from "@/components/video-player"
 import CalibrationOverlay from "@/components/calibration-overlay"
@@ -103,13 +104,25 @@ export default function WatchPage() {
 
     try {
       await containerRef.current.requestFullscreen()
-      
-      // 2. Only if successful, proceed to setup WebGazer
-      // if (window.webgazer) {
-      //   window.webgazer.setRegression('ridge').setTracker('TFFacemesh').begin();
-      //   window.webgazer.showVideoPreview(true);
-      // }
-      
+
+      const wg = (window as any).webgazer
+
+      if(!wg)
+        throw new Error("WebGazer not loaded")
+
+      // wg.setRegression('ridge')
+      //   .saveDataAcrossSessions(false)
+      //   // TODO: Set appropriate types
+      //   .setGazeListener((data: any, timestamp: any) => {
+      //     if (data) {
+      //       console.log(`Gaze data: x=${data.x}, y=${data.y}, t=${timestamp}`)
+      //     }
+      //   })
+      //   .begin()
+
+      // webgazer.showVideoPreview(false)
+      // webgazer.showPredictionPoints(false)
+
       dispatch({ type: "START_CALIBRATION" })
     } catch (err) {
       console.warn("Fullscreen denied:", err)
@@ -156,7 +169,8 @@ export default function WatchPage() {
 
   return (
     <div ref={containerRef} className="bg-background">
-      {/* <Script src="https://webgazer.cs.brown.edu/webgazer.js" onLoad={handleScriptLoad} /> */}
+      {/* Add onLoad to Script if required */}
+      <script src="/webgazer.js" async />
 
       {state.status === "IDLE" && (
         <div className="flex-1 w-full flex flex-col items-center justify-center space-y-6 p-80">
@@ -214,13 +228,11 @@ export default function WatchPage() {
             <AlertDialogTitle>
               <div className="font-extrabold">Fullscreen Paused</div>
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              <div className="font-medium">
+            <AlertDialogDescription className="font-medium">
                 {state.status === "CALIBRATING" 
                   ? "Calibration requires fullscreen. Resume to continue, or stop to cancel."
                   : "Playback requires fullscreen. Resume to watch, or finish the session."
                 }
-              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
