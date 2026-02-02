@@ -64,5 +64,5 @@ def get_video(video_id):
     return jsonify({"error": "Video not found"}), 404
 
 if __name__ == "__main__":
-    # Disable debug mode in prod
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # TODO: Run this in a WSGI server for prod
+    app.run(host='0.0.0.0', port=5000)
