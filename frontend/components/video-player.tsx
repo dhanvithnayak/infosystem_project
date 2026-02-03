@@ -8,88 +8,56 @@ interface VideoPlayerProps {
   onEnded: () => void;
 }
 
-const BATCH_INTERVAL = 3000; // Send data every 3 seconds
-const BATCH_ENDPOINT = `${process.env.NEXT_PUBLIC_API_URL}/gaze/batch`;
-
 export default function VideoPlayer({ video, onEnded }: VideoPlayerProps) {
-//   // --- EYE TRACKING LOGIC ---
-//   const bufferRef = useRef<any[]>([]);
-//   const batchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const gazeDataRef = useRef<Array<{ x: number; y: number; timestamp: number }>>([]);
 
-//   // 1. Function to send data to backend
-//   const flushBuffer = async () => {
-//     if (bufferRef.current.length === 0) return;
+  // TODO: De-slopify this code
+  useEffect(() => {
+    // 1. Set up the listener
+    webgazer.setGazeListener((data: any, timestamp: number) => {
+      if (data) {
+        // Push raw data to our ref
+        gazeDataRef.current.push({
+          x: data.x,
+          y: data.y,
+          timestamp: timestamp,
+        });
+      }
+    });
 
-//     // Create a copy and clear the immediate buffer
-//     const chunk = [...bufferRef.current];
-//     bufferRef.current = [];
+    // 2. The Cleanup Function: Runs when component unmounts
+    return () => {
+      // Optional: Clear the listener so it doesn't keep running in the background
+      webgazer.clearGazeListener();
 
-//     try {
-//       await fetch(BATCH_ENDPOINT, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ videoId: video.id, data: chunk }),
-//         keepalive: true, // Critical: ensures request survives if page unmounts
-//       });
-//     } catch (err) {
-//       console.error("Failed to sync gaze data:", err);
-//     }
-//   };
+      // Check if we actually have data to save
+      if (gazeDataRef.current.length > 0) {
+        // Create the file blob
+        const blob = new Blob([JSON.stringify(gazeDataRef.current, null, 2)], {
+          type: "application/json",
+        });
+        
+        // Generate a timestamp for the filename
+        const date = new Date().toISOString().replace(/[:.]/g, "-");
+        const filename = `gaze-session-${date}.json`;
 
-//   useEffect(() => {
-//     // 2. Setup WebGazer Listener on Mount
-//     if (typeof window !== "undefined" && window.webgazer) {
-//       // Resume tracker in case it was paused
-//       window.webgazer.resume();
+        // Create a temporary link and trigger the download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup the DOM
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        console.log(`Saved ${gazeDataRef.current.length} gaze points.`);
+      }
+    };
+  }, []);
 
-//       window.webgazer.setGazeListener((data: any, clock: number) => {
-//         if (data) {
-//           bufferRef.current.push({
-//             x: Math.round(data.x),
-//             y: Math.round(data.y),
-//             t: Math.round(clock),
-//           });
-//         }
-//       });
-//     }
-
-//     // 3. Start the Batch Timer
-//     batchTimerRef.current = setInterval(flushBuffer, BATCH_INTERVAL);
-
-//     // 4. Cleanup on Unmount (Video End or Navigate Away)
-//     return () => {
-//       if (batchTimerRef.current) clearInterval(batchTimerRef.current);
-//       if (typeof window !== "undefined" && window.webgazer) {
-//         window.webgazer.clearGazeListener();
-//         window.webgazer.pause(); // Save CPU
-//       }
-//       flushBuffer(); // Final save
-//     };
-//   }, [video.id]);
-
-
-//   // Handle YouTube "End" event via PostMessage (No heavy SDK needed)
-//   useEffect(() => {
-//     if (video.source_type !== "REMOTE") return;
-
-//     const handleMessage = (event: MessageEvent) => {
-//       // Filter only messages from YouTube
-//       if (!event.origin.includes("youtube.com")) return;
-
-//       try {
-//         const data = JSON.parse(event.data);
-//         // YouTube Player State "0" means Ended
-//         if (data.event === "infoDelivery" && data.info && data.info.playerState === 0) {
-//           onEnded();
-//         }
-//       } catch (e) {
-//         // Ignore JSON parse errors from other iframe messages
-//       }
-//     };
-
-//     window.addEventListener("message", handleMessage);
-//     return () => window.removeEventListener("message", handleMessage);
-//   }, [video.source_type, onEnded]);
   if (!video) {
     return <div className="p-4 text-center text-destructive">Video data is unavailable</div>;
   }
