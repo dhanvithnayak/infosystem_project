@@ -11,12 +11,9 @@ interface VideoPlayerProps {
 export default function VideoPlayer({ video, onEnded }: VideoPlayerProps) {
   const gazeDataRef = useRef<Array<{ x: number; y: number; timestamp: number }>>([]);
 
-  // TODO: De-slopify this code
   useEffect(() => {
-    // 1. Set up the listener
     webgazer.setGazeListener((data: any, timestamp: number) => {
       if (data) {
-        // Push raw data to our ref
         gazeDataRef.current.push({
           x: data.x,
           y: data.y,
@@ -25,23 +22,18 @@ export default function VideoPlayer({ video, onEnded }: VideoPlayerProps) {
       }
     });
 
-    // 2. The Cleanup Function: Runs when component unmounts
     return () => {
-      // Optional: Clear the listener so it doesn't keep running in the background
       webgazer.clearGazeListener();
 
-      // Check if we actually have data to save
       if (gazeDataRef.current.length > 0) {
-        // Create the file blob
         const blob = new Blob([JSON.stringify(gazeDataRef.current, null, 2)], {
           type: "application/json",
         });
         
-        // Generate a timestamp for the filename
+        // TODO: Send to backend instead of downloading
         const date = new Date().toISOString().replace(/[:.]/g, "-");
         const filename = `gaze-session-${date}.json`;
 
-        // Create a temporary link and trigger the download
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -49,11 +41,8 @@ export default function VideoPlayer({ video, onEnded }: VideoPlayerProps) {
         document.body.appendChild(a);
         a.click();
         
-        // Cleanup the DOM
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        console.log(`Saved ${gazeDataRef.current.length} gaze points.`);
+        URL.revokeObjectURL(url);        
       }
     };
   }, []);
