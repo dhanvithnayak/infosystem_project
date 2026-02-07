@@ -11,6 +11,8 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - infosystem-network
 
   backend:
     build:
@@ -20,3 +22,9 @@ services:
     ports:
       - "5000:5000"
     restart: unless-stopped
+    networks:
+      - infosystem-network
+
+networks:   
+  infosystem-network:
+    driver: bridge

@@ -1,16 +1,14 @@
-FROM node:25-alpine
+FROM node:25.6-slim
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
 
-RUN npm install
+RUN npm install -g pnpm@latest
+
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-COPY entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-EXPOSE 3000
-
-ENTRYPOINT ["entrypoint.sh"]
+RUN pnpm build
+CMD ["pnpm", "start"]

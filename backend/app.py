@@ -5,7 +5,11 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+allowed_origins = os.getenv(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:3000,http://127.0.0.1:3000,'
+).split(',')
+CORS(app, origins=allowed_origins)
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_FILE = os.path.join(BASE_DIR, 'data', 'videos.json')
