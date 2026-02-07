@@ -1,24 +1,66 @@
 ### InfoSystem Project
 
-## Development
+## Prerequisites
+1. Clone this repository
+```
+git clone https://github.com/dhanvithnayak/infosystem_project
+```
+2. Navigate into project folder
+```
+cd infosystem_project
+```
+### Frontend
+1. Navigate to the `frontend` directory
+```
+cd frontend
+```
+2. Duplicate `.env.template` and rename it to `.env`
+3. Set appropriate values of env variables in `.env`
+4. Navigate back to project root
+```
+cd ..
+```
 
+### Backend
+1. Navigate to the `backend` directory
+```
+cd backend
+```
+2. Duplicate `data/videos.json.example` and rename it to `data/videos.json` and add content information in the specified format
+3. Duplicate `.env.template` and rename it to `.env`, and set appropriate values
+4. Navigate back to project root
+
+## Installation
 ### Using docker
-
 ```
-docker compose up -d
+docker compose up --build -d
 ```
-
-The frontend will be available at `http://localhost:3000`
-
 ### Without docker
+#### Frontend
+1. Navigate to the `frontend` directory:
+```
+cd frontend
+```
+2. Install the required dependencies:
+```
+pnpm install
+```
+3. Run the frontend server:
+```
+# For development setup
+pnpm dev
 
-#### Backend
+# For production setup
+pnpm build
+pnpm start
+```
+4. Back to project root
+### Backend
 1. Navigate to the `backend` directory:
 ```
 cd backend
 ```
-2. Duplicate `data/videos.json.example` to `data/videos.json` and add content information in the proper format
-3. Install the required dependencies:
+2. Install the required dependencies:
 ```
 pip install -r requirements.txt
 ```
@@ -27,17 +69,3 @@ pip install -r requirements.txt
 python app.py
 ```
 
-#### Frontend
-1. Navigate to the `frontend` directory:
-```
-cd frontend
-```
-2. Duplicate `env.template` to `.env` and set env variables in the file
-3. Install the required dependencies:
-```
-pnpm install
-```
-4. Run the frontend server:
-```
-pnpm dev
-```
