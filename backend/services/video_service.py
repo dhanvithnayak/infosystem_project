@@ -7,7 +7,6 @@ from config import DATA_FILE
 
 
 def _load_from_json() -> list:
-    """Helper to load raw data from the JSON file"""
     if not os.path.exists(DATA_FILE):
         return []
     try:
@@ -19,13 +18,11 @@ def _load_from_json() -> list:
 
 
 def get_all_videos() -> List[Video]:
-    """Retrieve all videos"""
     raw_videos = _load_from_json()
     return [Video.from_json(v) for v in raw_videos]
 
 
 def get_video_by_id(video_id: str) -> Video:
-    """Retrieve a single video by ID"""
     raw_videos = _load_from_json()
     for video_data in raw_videos:
         if video_data.get('id') == video_id:

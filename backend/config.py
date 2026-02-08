@@ -25,6 +25,4 @@ DATA_FILE = os.path.join(DATA_DIR, 'videos.json')
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
-# Most probably not required
-SMOOTHING_WINDOW = 5
 FIXATION_THRESHOLD = 50
