@@ -1,4 +1,16 @@
-### InfoSystem Project
+<div align="center">
+  <h3 align="center">Chiasm</h3>
+
+  <p align="center">
+    <i>Web-based Attention Flow Tracker</i>
+  </p>
+</div>
+
+## Getting Started
+For the most simple setup (especially for production), use `docker`. No other dependencies required.<br />
+Else, make sure you have the following tools installed:
+- `pnpm`
+- `python`
 
 ## Prerequisites
 1. Clone this repository
@@ -69,3 +81,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
+## Creators
+- [Dhanvith Nayak - 23IM10010](https://github.com/dhanvithnayak)
+- [Ritam Mondal](https://github.com/ritammondal2004)
+- [Arkaprovo Sarkar]()
