@@ -25,23 +25,25 @@ export default function VideoPlayer({ video }: VideoPlayerProps) {
       webgazer.clearGazeListener()
 
       if (gazeDataRef.current.length > 0) {
-        const blob = new Blob([JSON.stringify(gazeDataRef.current, null, 2)], {
-          type: "application/json",
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/analyze`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ gaze_data: gazeDataRef.current }),
         })
-        
-        // TODO: Send to backend instead of downloading
-        const date = new Date().toISOString().replace(/[:.]/g, "-")
-        const filename = `gaze-session-${date}.json`
-
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement("a")
-        a.href = url
-        a.download = filename
-        document.body.appendChild(a)
-        a.click()
-        
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)       
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`)
+            }
+            return response.json()
+          })
+          .then(data => {
+            console.log('Gaze analysis result:', data)
+          })
+          .catch(error => {
+            console.error('Error sending gaze data to backend:', error)
+          })
       }
     }
   }, [])
