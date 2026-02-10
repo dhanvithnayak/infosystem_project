@@ -12,15 +12,18 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 import { useState, useEffect, useRef, useReducer } from "react"
-import { Video } from "@/types"
+import { Video, GazePoint, AnalyticsResult } from "@/types"
 import VideoPlayer from "@/components/video-player"
 import IdleScreen from "@/components/idle-screen"
 import CalibrationOverlay from "@/components/calibration-overlay"
+import AnalysisDashboard from "@/components/analysis-dashboard"
 
 type WatchState = {
   status: "LOADING" | "IDLE" | "CALIBRATING" | "PLAYING" | "SUMMARY" | "ERROR"
   video: Video | null
   error: string | null
+  gazeData: GazePoint[] | null
+  analysisResult: AnalyticsResult | null
 }
 
 type Action = 
@@ -29,6 +32,8 @@ type Action =
   | { type: "LOAD_FAIL"; payload: string }
   | { type: "START_CALIBRATION" }
   | { type: "START_PLAYING" }
+  | { type: "SET_GAZE_DATA"; payload: GazePoint[] }
+  | { type: "LOAD_ANALYSIS"; payload: AnalyticsResult }
   | { type: "END_SESSION" }
   | { type: "SET_ERROR"; payload: string }
 
@@ -44,12 +49,14 @@ function reducer(state: WatchState, action: Action): WatchState {
       return { ...state, status: "CALIBRATING", error: null }
     case "START_PLAYING":
       return { ...state, status: "PLAYING" }
+    case "SET_GAZE_DATA":
+      return { ...state, gazeData: action.payload }
+    case "LOAD_ANALYSIS":
+      return { ...state, analysisResult: action.payload, status: "SUMMARY" }
     case "END_SESSION":
       return { ...state, status: "SUMMARY" }
     case "SET_ERROR":
       return { ...state, status: "ERROR", error: action.payload }
-    default:
-      return state
   }
 }
 
@@ -57,12 +64,15 @@ const initialState: WatchState = {
   status: "LOADING",
   video: null,
   error: null,
+  gazeData: null,
+  analysisResult: null,
 }
 
 export default function WatchPage() {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [showReentryDialog, setShowReentryDialog] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const gazeDataRef = useRef<GazePoint[]>([])
 
   const videoContainer = document.getElementById("webgazerVideoContainer")
 
@@ -121,6 +131,68 @@ export default function WatchPage() {
     }
   }, [state.status])
 
+  // Set up gaze data collection when entering PLAYING state
+  useEffect(() => {
+    if (state.status === "PLAYING") {
+      gazeDataRef.current = []
+      console.log("👀 Gaze collection started (PLAYING state)")
+      
+      webgazer.setGazeListener((data: any, timestamp: number) => {
+        if (data) {
+          gazeDataRef.current.push({
+            x: data.x,
+            y: data.y,
+            timestamp: timestamp,
+          })
+          console.log(`📍 Gaze point collected (total: ${gazeDataRef.current.length})`)
+        }
+      })
+
+      return () => {
+        console.log(`🛑 Gaze collection stopped. Total points collected: ${gazeDataRef.current.length}`)
+        webgazer.clearGazeListener()
+      }
+    }
+  }, [state.status])
+
+  const transitionToSummary = async () => {
+    console.log("📤 Transitioning to SUMMARY, sending gaze data. Points collected:", gazeDataRef.current.length)
+    
+    if (gazeDataRef.current.length > 0) {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/analyze`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ gaze_data: gazeDataRef.current }),
+        })
+
+        console.log("Response status:", response.status)
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const data: AnalyticsResult = await response.json()
+        dispatch({ type: "LOAD_ANALYSIS", payload: data })
+        console.log("✅ Gaze analysis result:", data)
+      } catch (error) {
+        console.error("❌ Error sending gaze data to backend:", error)
+        dispatch({ type: "END_SESSION" })
+      }
+    } else {
+      console.warn("⚠️ No gaze data collected, transitioning to SUMMARY without analysis")
+      dispatch({ type: "END_SESSION" })
+    }
+  }
+
+  const handleVideoEnd = async () => {
+    console.log("🎬 Video ended event triggered")
+    dispatch({ type: "SET_GAZE_DATA", payload: gazeDataRef.current })
+    await transitionToSummary()
+  }
+
   const enterFullscreenAndStart = async () => {
     if (!containerRef.current) return
     if (process.env.NEXT_PUBLIC_SHOW_PREDICTION_DOT == "true")
@@ -152,11 +224,18 @@ export default function WatchPage() {
     dispatch({ type: "START_PLAYING"})
   };
 
-  const handleStopSession = () => {
+  const handleStopSession = async () => {
+    console.log("🛑 Stop session triggered, current status:", state.status)
     setShowReentryDialog(false)
     webgazer.showPredictionPoints(false).end()
+    
     if (state.status === "CALIBRATING") {
       dispatch({ type: "SET_ERROR", payload: "Calibration cancelled. Please refresh and try again" })
+    } else if (state.status === "PLAYING") {
+      // User exited fullscreen during playback - send gaze data before transitioning to SUMMARY
+      console.log("User exited during PLAYING state, sending gaze data")
+      dispatch({ type: "SET_GAZE_DATA", payload: gazeDataRef.current })
+      await transitionToSummary()
     } else {
       dispatch({ type: "END_SESSION" })
     }
@@ -204,11 +283,13 @@ export default function WatchPage() {
 
       {state.status === "PLAYING" && (
         <div className="container mx-auto">
-          <VideoPlayer video={state.video} />
+          <VideoPlayer video={state.video} onVideoEnd={handleVideoEnd} />
         </div>
       )}
 
-      {/* {viewState === "SUMMARY" && ()} */}
+      {state.status === "SUMMARY" && (
+        <AnalysisDashboard result={state.analysisResult} />
+      )}
 
       {showReentryDialog && (
         <div className="fixed inset-0 z-[999] bg-background/20 backdrop-blur-md transition-all duration-100 animate-in fade-in" />

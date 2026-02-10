@@ -14,3 +14,26 @@ export interface VideoMeta {
     cdn_url?: string
     mime_type?: string
 }
+
+export interface GazePoint {
+    x: number
+    y: number
+    timestamp: number
+}
+
+export interface AnalyticsMetrics {
+    temporal: Record<string, any>
+    spatial: Record<string, any>
+    attention: Record<string, any>
+    aoi: Record<string, any>
+}
+
+export interface AnalyticsResult {
+    status: string
+    metrics: AnalyticsMetrics
+    plots: {
+        heatmap: string
+        scatter_path: string
+        x_time_series: string
+    }
+}
