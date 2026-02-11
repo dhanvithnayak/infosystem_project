@@ -48,66 +48,123 @@ export default function AnalysisDashboard({ result }: AnalysisDashboardProps) {
         </div>
 
         {/* Metrics Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Temporal Metrics */}
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold tracking-tight">Temporal Metrics</CardTitle>
-              <CardDescription className="text-xs">Time-based measurements</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {metrics.temporal && Object.entries(metrics.temporal).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-baseline">
-                  <span className="text-sm text-muted-foreground leading-none">
-                    {formatLabel(key)}
-                  </span>
-                  <span className="text-base font-semibold text-blue-600 dark:text-blue-400 tabular-nums">
-                    {typeof value === 'number' ? value.toFixed(2) : String(value)}
-                  </span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Spatial Metrics */}
+        <div className="space-y-6">
+          {/* Spatial Metrics - Full Width */}
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-lg font-bold tracking-tight">Spatial Metrics</CardTitle>
-              <CardDescription className="text-xs">Position statistics</CardDescription>
+              <CardDescription className="text-xs">Position statistics across the screen</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {metrics.spatial && Object.entries(metrics.spatial).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-baseline">
-                  <span className="text-sm text-muted-foreground leading-none">
-                    {formatLabel(key)}
-                  </span>
-                  <span className="text-base font-semibold text-purple-600 dark:text-purple-400 tabular-nums">
-                    {typeof value === 'number' ? value.toFixed(2) : String(value)}
-                  </span>
-                </div>
-              ))}
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* X Statistics */}
+                {metrics.spatial?.x_stats && (
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                      Horizontal (X)
+                    </div>
+                    <div className="pl-3 space-y-2 border-l-2 border-purple-200 dark:border-purple-800">
+                      {Object.entries(metrics.spatial.x_stats).map(([key, value]) => (
+                        <div key={key} className="flex justify-between items-baseline max-w-xs">
+                          <span className="text-sm text-muted-foreground leading-none">
+                            {formatLabel(key)}
+                          </span>
+                          <span className="text-base font-semibold text-purple-600 dark:text-purple-400 tabular-nums">
+                            {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Y Statistics */}
+                {metrics.spatial?.y_stats && (
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                      Vertical (Y)
+                    </div>
+                    <div className="pl-3 space-y-2 border-l-2 border-purple-200 dark:border-purple-800">
+                      {Object.entries(metrics.spatial.y_stats).map(([key, value]) => (
+                        <div key={key} className="flex justify-between items-baseline max-w-xs">
+                          <span className="text-sm text-muted-foreground leading-none">
+                            {formatLabel(key)}
+                          </span>
+                          <span className="text-base font-semibold text-purple-600 dark:text-purple-400 tabular-nums">
+                            {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Outliers */}
+                {metrics.spatial?.outliers && (
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                      Data Quality
+                    </div>
+                    <div className="pl-3 space-y-2 border-l-2 border-purple-200 dark:border-purple-800">
+                      {Object.entries(metrics.spatial.outliers).map(([key, value]) => (
+                        <div key={key} className="flex justify-between items-baseline max-w-xs">
+                          <span className="text-sm text-muted-foreground leading-none">
+                            {formatLabel(key)}
+                          </span>
+                          <span className="text-base font-semibold text-purple-600 dark:text-purple-400 tabular-nums">
+                            {typeof value === 'number' ? `${value.toFixed(2)}%` : String(value)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
 
-          {/* Attention Metrics */}
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold tracking-tight">Attention Metrics</CardTitle>
-              <CardDescription className="text-xs">Focus and engagement</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {metrics.attention && Object.entries(metrics.attention).map(([key, value]) => (
-                <div key={key} className="flex justify-between items-baseline">
-                  <span className="text-sm text-muted-foreground leading-none">
-                    {formatLabel(key)}
-                  </span>
-                  <span className="text-base font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                    {typeof value === 'number' ? value.toFixed(2) : String(value)}
-                  </span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          {/* Temporal & Attention Metrics - Side by Side */}
+          <div className="flex flex-wrap justify-center gap-6">
+            {/* Temporal Metrics */}
+            <Card className="min-w-80">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-bold tracking-tight">Temporal Metrics</CardTitle>
+                <CardDescription className="text-xs">Time-based measurements</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {metrics.temporal && Object.entries(metrics.temporal).map(([key, value]) => (
+                  <div key={key} className="flex justify-between items-baseline max-w-xs">
+                    <span className="text-sm text-muted-foreground leading-none">
+                      {formatLabel(key)}
+                    </span>
+                    <span className="text-base font-semibold text-purple-600 dark:text-purple-400 tabular-nums">
+                      {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                    </span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Attention Metrics */}
+            <Card className="min-w-80">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-bold tracking-tight">Attention Metrics</CardTitle>
+                <CardDescription className="text-xs">Focus and engagement</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {metrics.attention && Object.entries(metrics.attention).map(([key, value]) => (
+                  <div key={key} className="flex justify-between items-baseline max-w-xs">
+                    <span className="text-sm text-muted-foreground leading-none">
+                      {formatLabel(key)}
+                    </span>
+                    <span className="text-base font-semibold text-purple-600 dark:text-purple-400 tabular-nums">
+                      {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                    </span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Visualizations */}
