@@ -26,4 +26,4 @@ SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 
 SMOOTHING_WINDOW = 5
-FIXATION_THRESHOLD = 50
+FIXATION_THRESHOLD = 150  # pixels/second - threshold for detecting fixations
