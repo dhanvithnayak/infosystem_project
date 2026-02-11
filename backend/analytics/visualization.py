@@ -2,8 +2,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 from utils.encoding import fig_to_base64
 from config import SCREEN_WIDTH, SCREEN_HEIGHT
+from analytics.metrics.heatmap import aoi_grid
 
 
 def generate_plots(df, screen_w=None, screen_h=None):
@@ -132,5 +134,33 @@ def generate_plots(df, screen_w=None, screen_h=None):
     ax4.set_ylim(-50, screen_h + 50)  # Add padding for better visibility
     ax4.grid(True, alpha=0.2, linestyle='--', linewidth=0.5)
     plots['y_time_series'] = fig_to_base64(fig4)
+
+    # --- Plot 5: AOI Grid Heatmap ---
+    fig5, ax5 = plt.subplots(figsize=(8, 8))
+    
+    # Compute AOI grid data
+    aoi_data = np.array(aoi_grid(df))
+    
+    # Create heatmap
+    sns.heatmap(
+        aoi_data,
+        annot=True,              # Show percentages in cells
+        fmt='.1f',               # Format as float with 1 decimal
+        cmap='YlOrRd',           # Yellow-Orange-Red gradient
+        cbar_kws={'label': 'Attention %'},
+        square=True,             # Square cells
+        linewidths=1,            # Grid lines
+        linecolor='white',       # White grid lines
+        ax=ax5,
+        vmin=0,                  # Minimum value for color scale
+        vmax=aoi_data.max()      # Maximum value for color scale
+    )
+    
+    ax5.set_title("Area of Interest Heatmap (5×5 Grid)", fontsize=12, pad=15)
+    ax5.set_xlabel("Horizontal Zone (Left → Right)", fontsize=10)
+    ax5.set_ylabel("Vertical Zone (Top → Bottom)", fontsize=10)
+    ax5.set_xticklabels(['1', '2', '3', '4', '5'])
+    ax5.set_yticklabels(['1', '2', '3', '4', '5'])
+    plots['aoi_heatmap'] = fig_to_base64(fig5)
 
     return plots

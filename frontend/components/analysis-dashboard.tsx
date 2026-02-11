@@ -33,7 +33,7 @@ export default function AnalysisDashboard({ result }: AnalysisDashboardProps) {
         </div>
 
         {/* Metrics Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Temporal Metrics */}
           <Card>
             <CardHeader className="pb-3">
@@ -79,25 +79,6 @@ export default function AnalysisDashboard({ result }: AnalysisDashboardProps) {
             </CardHeader>
             <CardContent className="space-y-2">
               {metrics.attention && Object.entries(metrics.attention).map(([key, value]) => (
-                <div key={key} className="flex justify-between text-sm">
-                  <span className="text-muted-foreground capitalize">
-                    {key.replace(/_/g, ' ')}
-                  </span>
-                  <span className="font-medium">
-                    {typeof value === 'number' ? value.toFixed(2) : String(value)}
-                  </span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* AOI Metrics */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">AOI Grid</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {metrics.aoi && Object.entries(metrics.aoi).map(([key, value]) => (
                 <div key={key} className="flex justify-between text-sm">
                   <span className="text-muted-foreground capitalize">
                     {key.replace(/_/g, ' ')}
@@ -195,6 +176,29 @@ export default function AnalysisDashboard({ result }: AnalysisDashboardProps) {
                       src={`data:image/png;base64,${plots.y_time_series}`}
                       alt="Y Time Series"
                       className="w-full h-auto"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* AOI Heatmap */}
+          <div className="flex justify-center">
+            {plots.aoi_heatmap && (
+              <Card className="overflow-hidden w-fit">
+                <CardHeader>
+                  <CardTitle className="text-lg">Area of Interest Heatmap</CardTitle>
+                  <CardDescription>
+                    Attention distribution across screen zones (5×5 grid)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-muted rounded-lg overflow-auto">
+                    <img
+                      src={`data:image/png;base64,${plots.aoi_heatmap}`}
+                      alt="AOI Heatmap"
+                      className="h-auto"
                     />
                   </div>
                 </CardContent>

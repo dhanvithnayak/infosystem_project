@@ -8,8 +8,7 @@ def compute_all_metrics(df):
     return {
         "temporal": temporal_metrics(df),
         "spatial": spatial_metrics(df),
-        "attention": attention_metrics(df),
-        "aoi": aoi_grid(df)
+        "attention": attention_metrics(df)
     }
 
 

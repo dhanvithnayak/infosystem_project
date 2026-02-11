@@ -36,5 +36,6 @@ export interface AnalyticsResult {
         scatter_path: string
         x_time_series: string
         y_time_series: string
+        aoi_heatmap: string
     }
 }
