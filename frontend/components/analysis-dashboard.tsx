@@ -164,6 +164,26 @@ export default function AnalysisDashboard({ result }: AnalysisDashboardProps) {
                 ))}
               </CardContent>
             </Card>
+
+            {/* Distraction Metrics */}
+            <Card className="min-w-80">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-bold tracking-tight">Distraction Metrics</CardTitle>
+                <CardDescription className="text-xs">Off-screen time analysis</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {metrics.distraction && Object.entries(metrics.distraction).map(([key, value]) => (
+                  <div key={key} className="flex justify-between items-baseline max-w-xs">
+                    <span className="text-sm text-muted-foreground leading-none">
+                      {formatLabel(key)}
+                    </span>
+                    <span className="text-base font-semibold text-purple-600 dark:text-purple-400 tabular-nums">
+                      {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                    </span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </div>
         </div>
 
@@ -285,6 +305,27 @@ export default function AnalysisDashboard({ result }: AnalysisDashboardProps) {
               </Card>
             )}
           </div>
+
+          {/* Distraction Timeline - Moved to end */}
+          {plots.distraction_timeline && (
+            <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-bold">Attention Timeline</CardTitle>
+                <CardDescription className="text-sm mt-1">
+                  Focus vs distraction periods over time
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted rounded-lg overflow-auto">
+                  <img
+                    src={`data:image/png;base64,${plots.distraction_timeline}`}
+                    alt="Attention Timeline"
+                    className="w-full h-auto"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

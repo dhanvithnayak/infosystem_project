@@ -25,6 +25,7 @@ export interface AnalyticsMetrics {
     temporal: Record<string, any>
     spatial: Record<string, any>
     attention: Record<string, any>
+    distraction: Record<string, any>
     aoi: Record<string, any>
 }
 
@@ -37,5 +38,6 @@ export interface AnalyticsResult {
         x_time_series: string
         y_time_series: string
         aoi_heatmap: string
+        distraction_timeline: string
     }
 }

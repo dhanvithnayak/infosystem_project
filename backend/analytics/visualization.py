@@ -164,3 +164,111 @@ def generate_plots(df, screen_w=None, screen_h=None):
     plots['aoi_heatmap'] = fig_to_base64(fig5)
 
     return plots
+
+
+def distraction_timeline(df):
+    """
+    Create a professional timeline visualization showing on-screen vs off-screen status over time.
+    Uses seaborn styling for a sleek, modern appearance.
+    
+    Args:
+        df: DataFrame with 'time_sec' and 'on_screen' columns
+    
+    Returns:
+        Base64 encoded plot
+    """
+    if df.empty or 'on_screen' not in df.columns:
+        return None
+    
+    # Set seaborn style for professional appearance
+    sns.set_style("whitegrid", {
+        'grid.linestyle': ':',
+        'grid.alpha': 0.3,
+        'axes.edgecolor': '#CCCCCC'
+    })
+    
+    fig, ax = plt.subplots(figsize=(14, 4.5), facecolor='white')
+    
+    # Convert boolean to int for plotting
+    on_screen_values = df['on_screen'].astype(int)
+    time_vals = df['time_sec']
+    
+    # Create smooth gradient effect using multiple overlapping fills
+    # Focused periods (professional forest green)
+    for alpha_val in [0.15, 0.25, 0.35]:
+        ax.fill_between(time_vals, 0, on_screen_values,
+                         where=(on_screen_values == 1),
+                         alpha=alpha_val, color='#059669',
+                         step='post', linewidth=0, zorder=2)
+    
+    # Distracted periods (red/orange gradient)
+    for alpha_val in [0.15, 0.25, 0.35]:
+        ax.fill_between(time_vals, 0, 1,
+                         where=(on_screen_values == 0),
+                         alpha=alpha_val, color='#F59E0B',
+                         step='post', linewidth=0, zorder=2)
+    
+    # Add sleek transition line
+    ax.step(time_vals, on_screen_values,
+            where='post', linewidth=2.5, color='#374151',
+            alpha=0.85, zorder=4, solid_capstyle='round')
+    
+    # Add subtle markers at transition points
+    transitions = on_screen_values.diff().fillna(0) != 0
+    if transitions.any():
+        transition_times = time_vals[transitions]
+        transition_vals = on_screen_values[transitions]
+        ax.scatter(transition_times, transition_vals,
+                   s=45, color='#374151', alpha=0.7, zorder=5,
+                   edgecolors='white', linewidths=1.5)
+    
+    # Modern styling
+    ax.set_ylim(-0.08, 1.08)
+    ax.set_xlim(time_vals.min() - 0.5, time_vals.max() + 0.5)
+    
+    # Clean axes
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_color('#CCCCCC')
+    ax.spines['bottom'].set_color('#CCCCCC')
+    
+    # Labels with modern typography
+    ax.set_xlabel('Time (seconds)', fontsize=12, fontweight=500, color='#374151', labelpad=10)
+    ax.set_ylabel('Attention State', fontsize=12, fontweight=500, color='#374151', labelpad=10)
+    
+    # Y-axis styling
+    ax.set_yticks([0, 1])
+    ax.set_yticklabels(['Distracted', 'Focused'], fontsize=11, color='#6B7280')
+    
+    # X-axis styling
+    ax.tick_params(axis='x', labelsize=10, colors='#6B7280', length=5, width=1.2)
+    ax.tick_params(axis='y', labelsize=11, colors='#6B7280', length=0)
+    
+    # Title with modern styling
+    ax.set_title('Attention State Timeline',
+                 fontsize=15, fontweight=600, color='#1F2937', pad=20, loc='left')
+    
+    # Add professional legend
+    from matplotlib.patches import Patch
+    legend_elements = [
+        Patch(facecolor='#059669', alpha=0.5, label='Focused'),
+        Patch(facecolor='#F59E0B', alpha=0.5, label='Distracted')
+    ]
+    ax.legend(handles=legend_elements, loc='upper right',
+              frameon=True, framealpha=0.95, edgecolor='#E5E7EB',
+              fontsize=11, bbox_to_anchor=(0.98, 0.98))
+    
+    # Subtle grid
+    ax.grid(True, axis='x', alpha=0.2, linestyle='--', linewidth=0.8, color='#D1D5DB')
+    ax.set_axisbelow(True)
+    
+    # Clean background
+    ax.set_facecolor('#FAFBFC')
+    fig.patch.set_facecolor('white')
+    
+    plt.tight_layout()
+    
+    # Reset seaborn style to avoid affecting other plots
+    sns.reset_defaults()
+    
+    return fig_to_base64(fig)
