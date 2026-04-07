@@ -9,6 +9,64 @@ import { cn } from "@/lib/utils"
 const LUMA_THRESHOLD = 100   // out of 255 — below this is considered too dark
 const POLL_INTERVAL_MS = 500
 
+/** Offscreen canvas so we do not race WebGazer's internal preview canvas. */
+let eyePatchScratch: HTMLCanvasElement | null = null
+
+/**
+ * Mirror WebGazer's face-feedback logic: green box = both eyes' patch bounds
+ * lie inside the centered square (see faceFeedbackBoxRatio). We cannot use
+ * getCurrentPrediction() — it returns null until regression has a valid prediction,
+ * even when the mesh sees the face and the on-screen box is green.
+ */
+async function isFaceInGuidanceBox(): Promise<boolean> {
+  const video = document.getElementById("webgazerVideoFeed") as HTMLVideoElement | null
+  if (!video || video.readyState < 2 || video.videoWidth === 0) return false
+
+  const tracker = webgazer.getTracker?.()
+  if (!tracker?.getEyePatches) return false
+
+  const w = video.videoWidth
+  const h = video.videoHeight
+  if (!eyePatchScratch) eyePatchScratch = document.createElement("canvas")
+  if (eyePatchScratch.width !== w || eyePatchScratch.height !== h) {
+    eyePatchScratch.width = w
+    eyePatchScratch.height = h
+  }
+  const ctx = eyePatchScratch.getContext("2d", { willReadFrequently: true })
+  if (!ctx) return false
+  ctx.drawImage(video, 0, 0, w, h)
+
+  const patches = await tracker.getEyePatches(video, eyePatchScratch, eyePatchScratch.width, eyePatchScratch.height)
+  if (!patches?.left || !patches.right) return false
+
+  const ratio = typeof webgazer.params?.faceFeedbackBoxRatio === "number"
+    ? webgazer.params.faceFeedbackBoxRatio
+    : 0.66
+  const e = w
+  const t = h
+  const n = Math.min(e, t) * ratio
+  const r = (t - n) / 2
+  const s = (e - n) / 2
+  const a = s + n
+  const i = r + n
+  const o = patches.left.imagex
+  const u = patches.left.imagey
+  const l = patches.right.imagex
+  const c = patches.right.imagey
+
+  const horiz =
+    o > s &&
+    o + patches.left.width < a &&
+    l > s &&
+    l + patches.right.width < a
+  const vert =
+    u > r &&
+    u + patches.left.height < i &&
+    c > r &&
+    c + patches.right.height < i
+  return horiz && vert
+}
+
 type Props = {
   onStart: () => void
   slotRef: React.RefObject<HTMLDivElement | null>
@@ -64,21 +122,18 @@ export default function IdleScreen({ onStart, slotRef }: Props) {
     webgazer.setGazeListener(dummyListener)
 
     const poll = async () => {
-      // Face detection
       try {
-        const prediction = await webgazer.getCurrentPrediction()
-        setFaceDetected(prediction !== null)
+        setFaceDetected(await isFaceInGuidanceBox())
       } catch {
         setFaceDetected(false)
       }
 
-      // Lighting
       const luma = sampleLuma()
       setLightingOk(luma !== null && luma >= LUMA_THRESHOLD)
     }
 
-    poll()
-    intervalRef.current = setInterval(poll, POLL_INTERVAL_MS)
+    void poll()
+    intervalRef.current = setInterval(() => void poll(), POLL_INTERVAL_MS)
     return () => {
       webgazer.clearGazeListener()
       if (intervalRef.current) clearInterval(intervalRef.current)
